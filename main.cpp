@@ -6,15 +6,14 @@
  */
 
 #include <windows.h>
+#include <string>
 
-LPSTR NazwaKlasy = (char*)"Klasa Okienka";
-MSG Komunikat;
+MSG Message;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                   LPSTR lpCmdLine, int nCmdShow) {
-  // WYPE£NIANIE STRUKTURY
+WNDCLASSEX CreateWindowInformation(const HINSTANCE& hInstance,
+                                   const std::string& name) {
   WNDCLASSEX wc;
 
   wc.cbSize = sizeof(WNDCLASSEX);
@@ -27,41 +26,55 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
   wc.lpszMenuName = NULL;
-  wc.lpszClassName = NazwaKlasy;
+  wc.lpszClassName = name.c_str();
   wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
-  // REJESTROWANIE KLASY OKNA
-  if (!RegisterClassEx(&wc)) {
-    MessageBox(NULL, "Wysoka Komisja odmawia rejestracji tego okna!",
-               "Niestety...", MB_ICONEXCLAMATION | MB_OK);
-    return 1;
-  }
-
-  // TWORZENIE OKNA
-  HWND hwnd;
-
-  hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, NazwaKlasy, "Oto okienko",
-                        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 240,
-                        120, NULL, NULL, hInstance, NULL);
-
-  if (hwnd == NULL) {
-    MessageBox(NULL, "Okno odmówi³o przyjœcia na œwiat!", "Ale kicha...",
-               MB_ICONEXCLAMATION);
-    return 1;
-  }
-
-  ShowWindow(hwnd, nCmdShow);  // Poka¿ okienko...
-  UpdateWindow(hwnd);
-
-  // Pêtla komunikatów
-  while (GetMessage(&Komunikat, NULL, 0, 0)) {
-    TranslateMessage(&Komunikat);
-    DispatchMessage(&Komunikat);
-  }
-  return Komunikat.wParam;
+  return wc;
 }
 
-// OBS£UGA ZDARZEÑ
+bool RegisterWindowClass(const WNDCLASSEX& classInfo) {
+  if (RegisterClassEx(&classInfo)) {
+    return true;
+  } else {
+    MessageBox(NULL, "Error", "Can't register class",
+               MB_ICONEXCLAMATION | MB_OK);
+    return false;
+  }
+}
+
+HWND CreateWindowByWindowClassName(const HINSTANCE& hInstance,
+                                   const std::string& windowClassName) {
+  return CreateWindowEx(WS_EX_CLIENTEDGE, windowClassName.c_str(),
+                        "Lock is armed", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
+                        CW_USEDEFAULT, 240, 120, NULL, NULL, hInstance, NULL);
+}
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                   LPSTR lpCmdLine, int nCmdShow) {
+  std::string windowClassName = "windowClassName";
+  WNDCLASSEX wcInfo = CreateWindowInformation(hInstance, windowClassName);
+
+  if (!RegisterWindowClass(wcInfo)) {
+    return 1;
+  }
+
+  HWND hwnd = CreateWindowByWindowClassName(hInstance, windowClassName);
+
+  if (hwnd == NULL) {
+    MessageBox(NULL, "Error", "Can't create window.", MB_ICONEXCLAMATION);
+    return 1;
+  }
+
+  ShowWindow(hwnd, nCmdShow);
+  UpdateWindow(hwnd);
+
+  while (GetMessage(&Message, NULL, 0, 0)) {
+    TranslateMessage(&Message);
+    DispatchMessage(&Message);
+  }
+  return Message.wParam;
+}
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
   switch (msg) {
     case WM_CLOSE:
