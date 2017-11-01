@@ -15,14 +15,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                    LPSTR lpCmdLine, int nCmdShow) {
   winApi::Window window(hInstance);
-  try
-  {
+  try {
     window.create("windowClassName", WndProc);
     window.show(nCmdShow);
     window.update();
-  }
-  catch (std::exception& exception)
-  {
+  } catch (std::exception& exception) {
     return 1;
   }
 
@@ -33,15 +30,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   return Message.wParam;
 }
 
+void lockWorkStationAndDestroyWindow(HWND hwnd) {
+  LockWorkStation();
+  winApi::Window::destroy(hwnd);
+}
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
   switch (msg) {
     case WM_CLOSE:
-      LockWorkStation();
-      winApi::Window::destroy(hwnd);
+      lockWorkStationAndDestroyWindow(hwnd);
       break;
 
     case WM_DESTROY:
       PostQuitMessage(0);
+      break;
+
+    case WM_MOUSEMOVE:
+      lockWorkStationAndDestroyWindow(hwnd);
+      break;
+
+    case WM_KILLFOCUS:
+      lockWorkStationAndDestroyWindow(hwnd);
       break;
 
     default:
