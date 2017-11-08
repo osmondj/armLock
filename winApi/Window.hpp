@@ -8,24 +8,24 @@
 #pragma once
 
 #include <windows.h>
-#include <exception>
 #include <string>
+#include "Exception.hpp"
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace winApi {
-class Exception : public std::exception {
-  virtual const char* what() const throw() { return "WinApi exception."; }
-};
 
 class Window {
  public:
   Window(const HINSTANCE& hInstanceRef)
       : hInstance(hInstanceRef), hwnd(nullptr) {}
 
-  void create(std::string className, WNDPROC wndProc) throw(Exception);
+  void create(std::string className) throw(Exception);
   void show(int nCmdShow) const;
   void update() const;
   void destroy();
   static void destroy(HWND hwnd);
+  const HWND getHwnd() const;
 
  private:
   void createWindowClassPoperties(const std::string& className,

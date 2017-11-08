@@ -5,12 +5,21 @@
  *      Author: User
  */
 
-#include "Window.h"
+#include "Window.hpp"
+#include "WindowMsgHandler.hpp"
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+  try {
+    return winApi::WindowMsgHandler::get(hwnd).handle(msg, wParam, lParam);
+  } catch (...) {
+    return DefWindowProc(hwnd, msg, wParam, lParam);
+  }
+}
 
 namespace winApi {
 
-void Window::create(std::string className, WNDPROC wndProc) throw(Exception) {
-  createWindowClassPoperties(className, wndProc);
+void Window::create(std::string className) throw(Exception) {
+  createWindowClassPoperties(className, WndProc);
   registerWindowClass();
   createWindowByName();
 }
@@ -45,9 +54,7 @@ void Window::registerWindowClass() const throw(Exception) {
   }
 }
 
-void Window::destroy() {
-  Window::destroy(hwnd);
-}
+void Window::destroy() { Window::destroy(hwnd); }
 
 void Window::destroy(HWND hwnd) {
   if (hwnd) {
@@ -55,6 +62,8 @@ void Window::destroy(HWND hwnd) {
     hwnd = nullptr;
   }
 }
+
+const HWND Window::getHwnd() const { return hwnd; }
 
 void Window::createWindowByName() throw(Exception) {
   if (!hwnd) {

@@ -7,10 +7,10 @@
 
 #include <windows.h>
 #include <string>
-#include "Window.h"
+#include "winApi/Window.hpp"
+#include "winApi/WindowMsgHandler.hpp"
 
 MSG Message;
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                    LPSTR lpCmdLine, int nCmdShow) {
@@ -19,9 +19,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
   winApi::Window window(hInstance);
   try {
-    window.create("windowClassName", WndProc);
+    window.create("windowClassName");
     window.show(nCmdShow);
     window.update();
+    winApi::WindowMsgHandler::add(std::shared_ptr<winApi::WindowMsgHandler>(
+        new winApi::WindowMsgHandler(window.getHwnd())));
   } catch (std::exception& exception) {
     return 1;
   }
@@ -31,34 +33,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     DispatchMessage(&Message);
   }
   return Message.wParam;
-}
-
-void lockWorkStationAndDestroyWindow(HWND hwnd) {
-  LockWorkStation();
-  winApi::Window::destroy(hwnd);
-}
-
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-  switch (msg) {
-    case WM_CLOSE:
-      lockWorkStationAndDestroyWindow(hwnd);
-      break;
-
-    case WM_DESTROY:
-      PostQuitMessage(0);
-      break;
-
-    case WM_MOUSEMOVE:
-      lockWorkStationAndDestroyWindow(hwnd);
-      break;
-
-    case WM_KILLFOCUS:
-      lockWorkStationAndDestroyWindow(hwnd);
-      break;
-
-    default:
-      return DefWindowProc(hwnd, msg, wParam, lParam);
-  }
-
-  return 0;
 }
