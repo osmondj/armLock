@@ -8,7 +8,7 @@
 #include <windows.h>
 #include <string>
 #include "winApi/Window.hpp"
-#include "winApi/WindowMsgHandler.hpp"
+#include "armLock/WindowMsgHandler.hpp"
 
 MSG Message;
 
@@ -23,7 +23,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     window.show(nCmdShow);
     window.update();
     winApi::WindowMsgHandler::add(std::shared_ptr<winApi::WindowMsgHandler>(
-        new winApi::WindowMsgHandler(window.getHwnd())));
+        new armLock::WindowMsgHandler(window.getHwnd())));
   } catch (std::exception& exception) {
     return 1;
   }
