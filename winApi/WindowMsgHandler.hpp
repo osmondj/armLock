@@ -21,8 +21,8 @@ class WindowMsgHandler {
   static void add(std::shared_ptr<WindowMsgHandler> msg);
   static void remove(HWND hwnd);
   static WindowMsgHandler& get(const HWND hwnd) throw(Exception);
-  virtual LRESULT CALLBACK handle(UINT msg, WPARAM wParam, LPARAM lParam) const
-      throw(Exception) = 0;
+  virtual LRESULT CALLBACK handle(UINT msg, WPARAM wParam,
+                                  LPARAM lParam) throw(Exception) = 0;
   const HWND getHwnd() const;
 
  protected:

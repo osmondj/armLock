@@ -7,10 +7,16 @@
 
 #include "WindowMsgHandler.hpp"
 #include "../winApi/Window.hpp"
+#ifdef DEBUG
+#include <iostream>
+#endif
 
 namespace armLock {
-LRESULT WindowMsgHandler::handle(UINT msg, WPARAM wParam, LPARAM lParam) const
-    throw(winApi::Exception) {
+
+const std::string WindowMsgHandler::unlockPassword = "HASLO";
+
+LRESULT WindowMsgHandler::handle(UINT msg, WPARAM wParam,
+                                 LPARAM lParam) throw(winApi::Exception) {
   switch (msg) {
     case WM_CLOSE:
       lockWorkStationAndDestroyWindow();
@@ -20,12 +26,18 @@ LRESULT WindowMsgHandler::handle(UINT msg, WPARAM wParam, LPARAM lParam) const
       PostQuitMessage(0);
       break;
 
+    case WM_KEYDOWN:
+      handleKeyDown(wParam);
+      break;
+
     case WM_MOUSEMOVE:
-      // lockWorkStationAndDestroyWindow();
+      typedString.clear();
       break;
 
     case WM_KILLFOCUS:
-      lockWorkStationAndDestroyWindow();
+      if (isLockArmed) {
+        lockWorkStationAndDestroyWindow();
+      }
       break;
 
     default:
@@ -37,6 +49,20 @@ LRESULT WindowMsgHandler::handle(UINT msg, WPARAM wParam, LPARAM lParam) const
 void WindowMsgHandler::lockWorkStationAndDestroyWindow() const {
   LockWorkStation();
   winApi::Window::destroy(hwnd);
+}
+
+void WindowMsgHandler::handleKeyDown(WPARAM wParam) {
+#ifdef DEBUG
+  std::cout << "Key=" << static_cast<char>(wParam) << std::endl;
+#endif
+  typedString += static_cast<char>(wParam);
+#ifdef DEBUG
+  std::cout << "TypedString=" << typedString << std::endl;
+#endif
+  if (typedString == unlockPassword) {
+    isLockArmed = false;
+    winApi::Window::destroy(hwnd);
+  }
 }
 
 } /* namespace armLock */
